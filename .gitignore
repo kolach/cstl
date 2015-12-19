@@ -1,0 +1,8 @@
+*.pyc
+*.dSYM/
+*.log
+*.o
+*.log
+tags
+*.swp
+build/
