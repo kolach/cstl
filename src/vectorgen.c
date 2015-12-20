@@ -1,5 +1,4 @@
 #include <stdlib.h>
-#include <stdarg.h>
 #include "vectorgen.h"
 #include "dbg.h"
 
