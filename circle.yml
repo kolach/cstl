@@ -1,3 +1,6 @@
+machine:
+  environment:
+    OPTFLAGS: -std=c99
 test:
   post:
     - make dev
