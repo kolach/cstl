@@ -6,7 +6,7 @@ void before_each()  {}
 void after_each()   {}
 
 char* test_create() {
-  return NULL;
+  return "Pending implementation";
 }
 
 char *all_tests() {
