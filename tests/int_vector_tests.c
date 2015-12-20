@@ -218,66 +218,55 @@ char* test_remove_beyond_size() {
 }
 
 char* test_remove_middle() {
-
-  size_t N = 5; // total values to insert
-  IntVector_push_many(vec, N, 1, 2, 3, 4, 5);
-
-  // vector contains: 1, 2, 3, 4, 5 ... N
+  IntVector_push_many(vec, 5, 1,2,3,4,5);
   // remove '3' in the middle (index: 2)
-  size_t M = 2; // position to remove
   int val;
-  int err = IntVector_remove(vec, M, &val);
+  int err = IntVector_remove(vec, 2, &val);
   mu_assert(err == 0, "failed to remove element");
-  mu_assert(IntVector_size(vec) == N-1, "vector should decrease in size");
+  mu_assert(IntVector_size(vec) == 4, "vector should decrease in size");
   mu_assert(val == 3, "vector should return removed value");
-
-  // vector contains: 1, 2, 4, 5
-  int j = 1;
-  for (size_t i = 0; i < N-1; i++) {
-    if (i == M)
-      j = j+1;
-    mu_assert(IntVector_get_unsafe(vec, i) == j, "vector contains wrong value");
-    j++;
-  }
-
+  mu_assert(IntVector_equals_to(vec, 4, 1,2,4,5), "should contain 1,2,4,5")
   return NULL;
 }
 
 char* test_remove_last() {
-  size_t N = 5; // total values to insert
-  IntVector_push_many(vec, N, 1, 2, 3, 4, 5);
-
-  // vector contains: 1, 2, 3, 4, 5 ... N
-  for (int i = N-1; i >= 0; i--) {
-    int j;
-    int err = IntVector_remove(vec, i, &j);
-    mu_assert(err == 0, "failed to remove element");
-    mu_assert(j == i+1, "should return removed element");
-    mu_assert(IntVector_size(vec) == (size_t)i, "size should be decreased");
-    // check values that are left
-    for (int k = 0; k < i; k++)
-      mu_assert(IntVector_get_unsafe(vec, k) == k+1, "vector contains wrong value");
-  }
+  IntVector_push_many(vec, 5, 1,2,3,4,5);
+  int j;
+  IntVector_remove(vec, IntVector_size(vec)-1, &j);
+  mu_assert(IntVector_equals_to(vec, 4, 1,2,3,4), "should contain 1,2,3,4")
+  mu_assert(j == 5, "should return value 5");
+  IntVector_remove(vec, IntVector_size(vec)-1, &j);
+  mu_assert(IntVector_equals_to(vec, 3, 1,2,3), "should contain 1,2,3")
+  mu_assert(j == 4, "should return value 4");
+  IntVector_remove(vec, IntVector_size(vec)-1, &j);
+  mu_assert(IntVector_equals_to(vec, 2, 1,2), "should contain 1,2")
+  mu_assert(j == 3, "should return value 3");
+  IntVector_remove(vec, IntVector_size(vec)-1, &j);
+  mu_assert(IntVector_equals_to(vec, 1, 1), "should contain 1")
+  mu_assert(j == 2, "should return value 2");
+  IntVector_remove(vec, IntVector_size(vec)-1, &j);
+  mu_assert(j == 1, "should return value 1");
   mu_assert(IntVector_size(vec) == 0, "all values should be revode");
   return NULL;
 }
 
 char* test_remove_first() {
-  size_t N = 5; // total values to insert
-  IntVector_push_many(vec, N, 1, 2, 3, 4, 5);
-
-  for (int i = 0; i < (int) N; i++) {
-    int j;
-    int err = IntVector_remove(vec, 0, &j);
-    mu_assert(err == 0, "failed to remove element");
-    mu_assert(j == i+1, "should return removed element");
-    mu_assert(IntVector_size(vec) == N-(i+1), "size should be decreased");
-    // check values that are left
-    for (int k = 0; k < (int) IntVector_size(vec); k++) {
-      mu_assert(IntVector_get_unsafe(vec, k) == j+1+k, "vector contains wrong value");
-    }
-  }
-
+  IntVector_push_many(vec, 5, 1,2,3,4,5);
+  int j;
+  IntVector_remove(vec, 0, &j);
+  mu_assert(IntVector_equals_to(vec, 4, 2,3,4,5), "should contain 2,3,4,5")
+  mu_assert(j == 1, "should return value 1");
+  IntVector_remove(vec, 0, &j);
+  mu_assert(IntVector_equals_to(vec, 3, 3,4,5), "should contain 3,4,5")
+  mu_assert(j == 2, "should return value 2");
+  IntVector_remove(vec, 0, &j);
+  mu_assert(IntVector_equals_to(vec, 2, 4,5), "should contain 4,5")
+  mu_assert(j == 3, "should return value 3");
+  IntVector_remove(vec, 0, &j);
+  mu_assert(IntVector_equals_to(vec, 1, 5), "should contain 5")
+  mu_assert(j == 4, "should return value 4");
+  IntVector_remove(vec, 0, &j);
+  mu_assert(j == 5, "should return value 5");
   mu_assert(IntVector_size(vec) == 0, "all values should be revode");
   return NULL;
 }
