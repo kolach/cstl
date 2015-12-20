@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdarg.h>
 #include "vectorgen.h"
 #include "dbg.h"
 
@@ -25,11 +26,11 @@ typedef struct VECTOR_TYPE {
   DATA_TYPE* data;
 } VECTOR_TYPE;
 
-struct VECTOR_TYPE* CSTL_VECTOR_METHOD(create)(size_t initial_size) {
+struct VECTOR_TYPE* CSTL_VECTOR_METHOD(create)(size_t initial_capacity) {
   struct VECTOR_TYPE* v = malloc(sizeof(struct VECTOR_TYPE));
   check_mem(v);
-  check(initial_size > 0, "initial_size should be greater than zero");
-  v->capacity = initial_size;
+  check(initial_capacity > 0, "initial_size should be greater than zero");
+  v->capacity = initial_capacity;
   v->data = calloc(v->capacity, sizeof(DATA_TYPE));
   v->size = 0;
   v->expand_rate = EXPAND_RATE;
@@ -67,7 +68,7 @@ int CSTL_VECTOR_METHOD(set)(struct VECTOR_TYPE* v, size_t index, DATA_TYPE elem)
   if (index > v->size)
     v->size = index;
   return 0;
-error:  
+error:
   return -1;
 }
 
@@ -138,12 +139,15 @@ int CSTL_VECTOR_METHOD(contract)(struct VECTOR_TYPE* v) {
   return resize(v, new_capacity + 1);
 }
 
-int CSTL_VECTOR_METHOD(push)(struct VECTOR_TYPE* v, DATA_TYPE elem) {
+static inline int push(struct VECTOR_TYPE* v, DATA_TYPE elem) {
   v->data[v->size] = elem;
   v->size++;
   return update_capacity(v);
 }
 
+int CSTL_VECTOR_METHOD(push)(struct VECTOR_TYPE* v, DATA_TYPE elem) {
+  return push(v, elem);
+}
 
 static inline int pop(struct VECTOR_TYPE* v, DATA_TYPE* elem) {
   check(v->size > 0, "Attempt to pop from empty array");
@@ -165,6 +169,36 @@ DATA_TYPE CSTL_VECTOR_METHOD(pop_unsafe)(struct VECTOR_TYPE* v) {
   DATA_TYPE elem;
   pop(v, &elem);
   return elem;
+}
+
+int CSTL_VECTOR_METHOD(insert)(struct VECTOR_TYPE* v, size_t pos, DATA_TYPE elem) {
+  if (pos == v->size) return push(v, elem);
+  check(pos < v->size, "Attempt to insert value beyond size");
+  DATA_TYPE* src = v->data + pos;
+  DATA_TYPE* dst = src + 1;
+  size_t count = (v->size - pos)*sizeof(DATA_TYPE);
+  check( memmove(dst, src, count ), "Failed to move data" );
+  v->data[pos] = elem;
+  v->size++;
+  return update_capacity(v);;
+error:
+  return -1;
+}
+
+int CSTL_VECTOR_METHOD(remove)(struct VECTOR_TYPE* v, size_t pos, DATA_TYPE* elem) {
+  // small optimization if last element is removed
+  if (pos == v->size-1) return pop(v, elem);
+
+  check(pos < v->size, "Attempt to remove beyond size");
+  if (elem) *elem = v->data[pos];
+  DATA_TYPE* dst = v->data + pos;
+  DATA_TYPE* src = dst + 1;
+  size_t count = (v->size - pos)*sizeof(DATA_TYPE);
+  check( memmove(dst, src, count ), "Failed to move data" );
+  v->size--;
+  return update_capacity(v);
+error:
+  return -1;
 }
 
 #undef EXPAND_RATE

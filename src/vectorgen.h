@@ -10,7 +10,7 @@
 
 struct VECTOR_TYPE;
 
-struct VECTOR_TYPE* CSTL_VECTOR_METHOD(create)(size_t initial_size);
+struct VECTOR_TYPE* CSTL_VECTOR_METHOD(create)(size_t initial_capacity);
 
 size_t CSTL_VECTOR_METHOD(capacity)(struct VECTOR_TYPE* v);
 
@@ -37,5 +37,9 @@ int CSTL_VECTOR_METHOD(push)(struct VECTOR_TYPE* v, DATA_TYPE elem);
 int CSTL_VECTOR_METHOD(pop)(struct VECTOR_TYPE* v, DATA_TYPE* elem);
 
 DATA_TYPE CSTL_VECTOR_METHOD(pop_unsafe)(struct VECTOR_TYPE* v);
+
+int CSTL_VECTOR_METHOD(insert)(struct VECTOR_TYPE* v, size_t pos, DATA_TYPE elem);
+
+int CSTL_VECTOR_METHOD(remove)(struct VECTOR_TYPE* v, size_t pos, DATA_TYPE* elem);
 
 #endif
