@@ -8,7 +8,13 @@
 
 #include <stddef.h>
 
-struct VECTOR_TYPE;
+typedef struct VECTOR_TYPE {
+  size_t size;
+  size_t element_size;
+  size_t expand_rate;
+  size_t capacity;
+  DATA_TYPE* data;
+} VECTOR_TYPE;
 
 struct VECTOR_TYPE* CSTL_VECTOR_METHOD(create)(size_t initial_capacity);
 
@@ -25,6 +31,10 @@ int CSTL_VECTOR_METHOD(set)(struct VECTOR_TYPE* v, size_t index, DATA_TYPE elem)
 int CSTL_VECTOR_METHOD(get)(const struct VECTOR_TYPE* v, size_t index, DATA_TYPE* elem);
 
 DATA_TYPE CSTL_VECTOR_METHOD(get_unsafe)(const struct VECTOR_TYPE* v, size_t index);
+
+int CSTL_VECTOR_METHOD(set_capacity)(struct VECTOR_TYPE* v, size_t new_capacity);
+
+int CSTL_VECTOR_METHOD(set_size)(struct VECTOR_TYPE* v, size_t new_size);
 
 int CSTL_VECTOR_METHOD(expand)(struct VECTOR_TYPE* v);
 

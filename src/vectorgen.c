@@ -18,19 +18,72 @@
 #define EXPAND_RATE 300
 #endif
 
-typedef struct VECTOR_TYPE {
-  size_t size;
-  size_t expand_rate;
-  size_t capacity;
-  DATA_TYPE* data;
-} VECTOR_TYPE;
+/*typedef struct VECTOR_TYPE {*/
+  /*size_t size;*/
+  /*size_t expand_rate;*/
+  /*size_t capacity;*/
+  /*DATA_TYPE* data;*/
+/*} VECTOR_TYPE;*/
+
+
+static inline int set_capacity(struct VECTOR_TYPE* v, size_t new_capacity) {
+    if (v->capacity == new_capacity) return 0;
+    debug("Resizing vector from %zu to %zu", v->capacity, new_capacity);
+
+
+    if (new_capacity < v->expand_rate + 1) new_capacity = v->expand_rate + 1; 
+    size_t old_capacity = v->capacity;
+
+    v->capacity = new_capacity;
+    void *data = realloc(v->data, v->capacity * sizeof(DATA_TYPE));
+    check_mem(data);
+    v->data = data;
+    
+    if (old_capacity < new_capacity)
+      memset(v->data + old_capacity, 0, new_capacity - old_capacity);
+    
+    return 0;
+  error:
+    return -1;
+}
+
+static inline int expand(struct VECTOR_TYPE* v) {
+  size_t new_capacity = v->capacity + v->expand_rate;
+  check(set_capacity(v, new_capacity) == 0, "Failed to expand v to new size: %zu", new_capacity);
+  return 0;
+error:
+  return -1;
+}
+
+static inline int collapse(struct VECTOR_TYPE* v) {
+  size_t new_capacity = v->capacity - v->expand_rate;
+  check(set_capacity(v, new_capacity) == 0, "Failed to expand v to new size: %zu", new_capacity);
+  return 0;
+error:
+  return -1;
+}
+
+static inline int update_capacity(struct VECTOR_TYPE* v) {
+  if (v->size >= v->capacity)
+    return expand(v);
+  if (v->size + v->expand_rate < v->capacity)
+    return collapse(v);
+  return 0;
+}
+
+static inline int push(struct VECTOR_TYPE* v, DATA_TYPE elem) {
+  v->data[v->size] = elem;
+  v->size++;
+  return update_capacity(v);
+}
 
 struct VECTOR_TYPE* CSTL_VECTOR_METHOD(create)(size_t initial_capacity) {
   struct VECTOR_TYPE* v = malloc(sizeof(struct VECTOR_TYPE));
   check_mem(v);
   check(initial_capacity > 0, "initial_size should be greater than zero");
   v->capacity = initial_capacity;
-  v->data = calloc(v->capacity, sizeof(DATA_TYPE));
+  v->element_size = sizeof(DATA_TYPE);
+  v->data = calloc(v->capacity, v->element_size);
   v->size = 0;
   v->expand_rate = EXPAND_RATE;
   check_mem(v->data);
@@ -49,8 +102,21 @@ size_t CSTL_VECTOR_METHOD(capacity)(struct VECTOR_TYPE* v) {
   return v->capacity;
 }
 
+int CSTL_VECTOR_METHOD(set_capacity)(struct VECTOR_TYPE* v, size_t new_capacity) {
+  return set_capacity(v, new_capacity);
+}
+
 size_t CSTL_VECTOR_METHOD(size)(struct VECTOR_TYPE* v) {
   return v->size;
+}
+
+int CSTL_VECTOR_METHOD(set_size)(struct VECTOR_TYPE* v, size_t new_size) {
+  if (v->capacity < new_size) 
+    check(set_capacity(v, new_size) == 0, "Failed to set capacity to %zu", new_size);
+  v->size = new_size;
+  return 0;
+error:
+  return -1;
 }
 
 size_t CSTL_VECTOR_METHOD(expand_rate)(struct VECTOR_TYPE* v) {
@@ -89,59 +155,14 @@ DATA_TYPE CSTL_VECTOR_METHOD(get_unsafe)(const struct VECTOR_TYPE* v, size_t ind
   return elem;
 }
 
-static inline int resize(struct VECTOR_TYPE* v, size_t new_capacity) {
-    if (v->capacity == new_capacity) return 0;
-    debug("Resizing vector from %zu to %zu", v->capacity, new_capacity);
-    v->capacity = new_capacity;
-    void *data = realloc(v->data, v->capacity * sizeof(DATA_TYPE));
-    check_mem(data);
-    v->data = data;
-    return 0;
-  error:
-    return -1;
-}
-
-static inline int expand(struct VECTOR_TYPE* v) {
-  size_t old_capacity = v->capacity;
-  size_t new_capacity = v->capacity + v->expand_rate;
-  check(resize(v, new_capacity) == 0, "Failed to expand v to new size: %zu", new_capacity);
-  memset(v->data + old_capacity, 0, v->expand_rate + 1);
-  return 0;
-error:
-  return -1;
-}
-
 int CSTL_VECTOR_METHOD(expand)(struct VECTOR_TYPE* v) {
   return expand(v);
-}
-
-static inline int collapse(struct VECTOR_TYPE* v) {
-  size_t new_capacity = v->capacity - v->expand_rate;
-  if (new_capacity < v->expand_rate + 1) new_capacity = v->expand_rate + 1;
-  check(resize(v, new_capacity) == 0, "Failed to expand v to new size: %zu", new_capacity);
-  return 0;
-error:
-  return -1;
-}
-
-static inline int update_capacity(struct VECTOR_TYPE* v) {
-  if (v->size >= v->capacity)
-    return expand(v);
-  if (v->size + v->expand_rate < v->capacity)
-    return collapse(v);
-  return 0;
 }
 
 // shrinks vector capacity at least expand_rate size
 int CSTL_VECTOR_METHOD(contract)(struct VECTOR_TYPE* v) {
   size_t new_capacity = v->size < v->expand_rate ? v->expand_rate : v->size;
-  return resize(v, new_capacity + 1);
-}
-
-static inline int push(struct VECTOR_TYPE* v, DATA_TYPE elem) {
-  v->data[v->size] = elem;
-  v->size++;
-  return update_capacity(v);
+  return set_capacity(v, new_capacity + 1);
 }
 
 int CSTL_VECTOR_METHOD(push)(struct VECTOR_TYPE* v, DATA_TYPE elem) {
