@@ -59,7 +59,7 @@ tests: $(TESTS)
 	sh ./tests/runtests.sh
 
 valgrind:
-	VALGRIND="valgrind --log-file=/tmp/valgrind-%p.log" $(MAKE)
+	VALGRIND="valgrind --leak-check=full --show-leak-kinds=all --log-file=/tmp/valgrind-%p.log" $(MAKE)
 
 # The Cleaner
 clean:
