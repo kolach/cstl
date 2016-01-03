@@ -1,37 +1,18 @@
 #include "minunit.h"
+#include "helpers.h"
 #include <vector.h>
 #include <algorithm.h>
 
 struct Vector* v = NULL;
 size_t initial_capacity = 10;
-
-typedef struct Packet {
-  void* data;
-  size_t size;
-} Packet;
-
-struct Packet* Packet_create(size_t size) {
-  struct Packet* p = malloc(sizeof(struct Packet));
-  check_mem(p);
-  p->data = calloc(size, sizeof(void*));
-  p->size = size;
-  check_mem(p->data);
-  return p;
-error:
-  if (p) free(p);
-  return NULL;
-}
-
-void Packet_destroy(struct Packet* p) {
-  free(p->data);
-  free(p);
-}
+size_t call_count = 0;
 
 void before_all()   {}
 void after_all()    {}
 
 void before_each() {
   v = Vector_create(initial_capacity);
+  call_count = 0;
 }
 
 void after_each() {
