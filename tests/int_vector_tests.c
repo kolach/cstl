@@ -1,8 +1,5 @@
-#include <algorithm.h>
-#include <stdarg.h>
-
 #include "minunit.h"
-#include "helpers.h"
+#include "test_helpers.h"
 
 struct IntVector* vec;
 size_t initial_capacity;

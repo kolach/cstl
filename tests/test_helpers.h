@@ -1,7 +1,8 @@
 #ifndef _HELPERS_H_
 #define _HELPERS_H_
 
-#include <int_vector.h>
+#include <cstl.h>
+#include <dbg.h>
 
 // helper functions to populate and compare content
 

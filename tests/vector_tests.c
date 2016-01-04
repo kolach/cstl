@@ -1,7 +1,5 @@
 #include "minunit.h"
-#include "helpers.h"
-#include <vector.h>
-#include <algorithm.h>
+#include "test_helpers.h"
 
 struct Vector* v = NULL;
 size_t initial_capacity = 10;
